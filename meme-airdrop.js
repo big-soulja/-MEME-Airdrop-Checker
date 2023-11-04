@@ -1,4 +1,5 @@
 require("dotenv").config();
+const fs = require("fs");
 const ethers = require("ethers");
 
 const API_URL = process.env.API_URL;
@@ -10,9 +11,10 @@ const collectionID = 2;
 
 async function main() {
   const nftPromises = [];
+  const claimableMap = new Map();
   let unclaimed = 0;
   let unclaimedAmmount = 0;
-  for (let i = 0; i < 9998; i++) {
+  for (let i = 0; i < 999; i++) {
     nftPromises.push(
       (async () => {
         const [claimableAmount, time] =
@@ -22,6 +24,7 @@ async function main() {
           unclaimed++;
           console.log(`index ${i} has something`);
           unclaimedAmmount += claimableAmount;
+          claimableMap.set(i, claimableAmount);
         }
       })()
     );
@@ -37,6 +40,16 @@ async function main() {
   console.log(
     `There are ${unclaimed} unclaimed airdrops in this collection, totalling ${unclaimedAmmount} tokens`
   );
+  const claimableMapString = JSON.stringify([...claimableMap]);
+
+  // Write the claimableMapString to a text file
+  fs.writeFile("claimableMap.txt", claimableMapString, (err) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    console.log("claimableMap.txt has been created successfully.");
+  });
 }
 
 // ABI from proxy contract
